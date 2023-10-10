@@ -57,7 +57,7 @@ UpdateLauncher(){
 
     local answer := MsgBox("Atualizacao encontrada para o Launcher.`nDeseja atualizar?", , "0x4")
     if answer == "Yes"
-        GITHUB.UpdateItself(A_ScriptFullPath)
+        GITHUB.UpdateItself(A_ScriptDir)
     else
         return false
 }

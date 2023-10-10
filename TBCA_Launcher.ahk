@@ -81,25 +81,25 @@ EnableHotkeys(){
     Hotkey(CONFIG_INI["Launcher", "open_hotkey", "^+m"], HotkeyOpenLauncher, "Off")
 }
 
-HotkeyOpenBuscaPMC(){
+HotkeyOpenBuscaPMC(args*){
     local app := APPS.GetApp(BUSCAPMC_REPO)
     app.OpenApp(true)
     return
 }
 
-HotkeyOpenCouponGenerator(){
+HotkeyOpenCouponGenerator(args*){
     local app := APPS.GetApp(BUSCAPMC_REPO)
     app.OpenApp(true)
     return
 }
 
-HotkeyOpenFPExtra(){
+HotkeyOpenFPExtra(args*){
     local app := APPS.GetApp(BUSCAPMC_REPO)
     app.OpenApp(true)
     return
 }
 
-HotkeyOpenLauncher(){
+HotkeyOpenLauncher(args*){
     if WinActive(MAIN_GUI_TITLE)
         _MainGuiShow(false)
     else{

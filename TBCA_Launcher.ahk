@@ -9,7 +9,7 @@
 #Include Bruno-Functions\Ini.ahk
 
 ;==========Globals==========;
-VERSION := "1.0.3"
+VERSION := "1.0.4"
 USER := "TheBrunoCA"
 REPO := "TBCA_Launcher"
 GITHUB := GithubReleases(USER, REPO, true)
@@ -97,13 +97,13 @@ HotkeyOpenBuscaPMC(args*){
 }
 
 HotkeyOpenCouponGenerator(args*){
-    local app := APPS.GetApp(BUSCAPMC_REPO)
+    local app := APPS.GetApp(COUPON_GENERATOR_REPO)
     app.OpenApp(true)
     return
 }
 
 HotkeyOpenFPExtra(args*){
-    local app := APPS.GetApp(BUSCAPMC_REPO)
+    local app := APPS.GetApp(FP_EXTRA_REPO)
     app.OpenApp(true)
     return
 }

@@ -234,6 +234,7 @@ Class AppClass {
             if answer != "Yes"
                 return
             this.InstallApp(&progress_var?, &progress_text?, timer_period)
+            MsgBox(this.repo " instalado.")
         }
         if not overwrite {
             if ProcessExist(this.exe)

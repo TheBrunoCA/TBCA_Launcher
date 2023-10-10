@@ -9,7 +9,7 @@
 #Include Bruno-Functions\Ini.ahk
 
 ;==========Globals==========;
-VERSION := "1.0.1"
+VERSION := "1.0.2"
 USER := "TheBrunoCA"
 REPO := "TBCA_Launcher"
 GITHUB := GithubReleases(USER, REPO, true)

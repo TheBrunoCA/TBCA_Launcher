@@ -9,7 +9,7 @@
 #Include Bruno-Functions\Ini.ahk
 
 ;==========Globals==========;
-VERSION := "1.0.0"
+VERSION := "1.0.1"
 USER := "TheBrunoCA"
 REPO := "TBCA_Launcher"
 GITHUB := GithubReleases(USER, REPO, true)
@@ -43,10 +43,14 @@ FileInstall("C:\Repositorios\Icons\FP-Extra.ico", APPS.GetApp(FP_EXTRA_REPO).ico
 
 ;==========Functions==========;
 
-LauncherAutoUpdate(){
+LauncherAutoUpdate(args*){
     if CONFIG_INI["auto-update", "next", 0] > A_Now
         return
     CONFIG_INI["auto-update", "next"] := DateAdd(A_Now, CONFIG_INI["auto-update", "interval", 10], "Minutes")
+    UpdateLauncher()
+}
+
+UpdateLauncher(){
     GITHUB.GetInfo()
     if GITHUB.IsUpToDate(VERSION, , true)
         return
@@ -54,6 +58,8 @@ LauncherAutoUpdate(){
     local answer := MsgBox("Atualizacao encontrada para o Launcher.`nDeseja atualizar?", , "0x4")
     if answer == "Yes"
         GITHUB.UpdateItself(A_ScriptFullPath)
+    else
+        return false
 }
 
 CanCheckAppsUpdates(){
@@ -116,7 +122,12 @@ AppGui(app) {
         WinClose("TBCA_Launcher " app.repo)
 
     app_gui := Gui(, "TBCA_Launcher " app.repo)
+    app_gui.OnEvent("Size", _OnResize)
     app_gui.AddPicture("h150 w-1", app.icon)
+    progress_value := 0
+    progress_bar := app_gui.AddProgress()
+    progress_text := ""
+    progress_txt := app_gui.AddText()
     app_gui.SetFont("s12")
     app_gui.AddText("ys", app.repo)
     app_gui.SetFont("s8")
@@ -138,8 +149,23 @@ AppGui(app) {
         inst_btn.OnEvent("Click", _Install)
     }
 
+
     app_gui.Show()
 
+    _OnResize(GuiObj, MinMax, Width, Height){
+        progress_bar.Move(10, , Width -20)
+    }
+
+    _ProgressUpdate(args*){
+        progress_bar.Value := progress_value
+        progress_txt.Value := progress_text
+    }
+
+    _ResetProgress(){
+        SetTimer(_ProgressUpdate, 0)
+        progress_text := ""
+        progress_txt.Value := ""
+    }
 
     _Uninstall(GuiCtrlObj, Info, Href?) {
         app.UninstallApp()
@@ -147,7 +173,9 @@ AppGui(app) {
     }
 
     _Install(GuiCtrlObj, Info, Href?) {
-        app.InstallApp()
+        SetTimer(_ProgressUpdate, 10)
+        app.InstallApp(&progress_value, &progress_text)
+        _ResetProgress()
         _Reset()
     }
 
@@ -157,7 +185,9 @@ AppGui(app) {
     }
 
     _Update(GuiCtrlObj, Info, Href?) {
-        app.UpdateApp()
+        SetTimer(_ProgressUpdate, 100)
+        app.UpdateApp(&progress_value, &progress_text)
+        _ResetProgress()
         _Reset()
     }
 
@@ -192,7 +222,13 @@ Class AppClass {
         return true
     }
 
-    OpenApp(overwrite := false) {
+    OpenApp(overwrite := false, &progress_var?, &progress_text?, timer_period := 100) {
+        if not this.IsInstalled(){
+            local answer := MsgBox(this.repo " nao esta instalado.`nDeseja instalar?", , "0x4")
+            if answer != "Yes"
+                return
+            this.InstallApp(&progress_var?, &progress_text?, timer_period)
+        }
         if not overwrite {
             if ProcessExist(this.exe)
                 return
@@ -200,23 +236,23 @@ Class AppClass {
             while ProcessExist(this.exe)
                 ProcessClose(this.exe)
         }
-        Run(this.exe)
+        Run(this.full_path)
         return
     }
 
-    UpdateApp(&progress_var?, &progress_text?) {
+    UpdateApp(&progress_var?, &progress_text?, timer_period := 100) {
         this.CloseApp()
         this.UninstallApp(false)
-        this.git.UpdateApp(this.full_path, this.latest_release, &progress_var, &progress_text)
+        this.git.UpdateApp(this.full_path, this.latest_release, &progress_var, &progress_text, timer_period)
         FileOverwrite(this.latest_release["tag_name"], this._version)
         return this.latest_release["tag_name"]
     }
 
-    InstallApp(&progress_var?, &progress_text?) {
+    InstallApp(&progress_var?, &progress_text?, timer_period := 100) {
         if FileExist(this.full_path) {
             this.UninstallApp(false)
         }
-        return this.UpdateApp(&progress_var?, &progress_text?)
+        return this.UpdateApp(&progress_var?, &progress_text?, timer_period)
     }
 
     UninstallApp(clean_all := true) {
@@ -325,7 +361,7 @@ if A_IsCompiled{
     if A_ScriptFullPath != EXE_PATH
         try FileCopy(A_ScriptFullPath, EXE_PATH, true)
     
-    LauncherAutoUpdate()
+    SetTimer(LauncherAutoUpdate, 1000*60*10)
 }
 
 EnableHotkeys()
@@ -358,7 +394,9 @@ main_gui_ckupd_btn := main_gui.AddButton("xp " main_gui_ckupd_btn_disabled, "Che
 main_gui_ckupd_btn.OnEvent("Click", _MainGuiCheckAppsUpdates)
 main_gui_upd_btn := main_gui.AddButton("yp x+5", "Atualizar todos os aplicativos")
 main_gui_upd_btn.OnEvent("Click", _MainGuiUpdateAllApps)
-main_gui_close_btn := main_gui.AddButton("xm+10 y+10", "Fechar Launcher")
+main_gui_upd_launcher_btn := main_gui.AddButton("xm+10 y+10", "Atualizar Launcher")
+main_gui_upd_launcher_btn.OnEvent("Click", _MainGuiUpdateLauncher)
+main_gui_close_btn := main_gui.AddButton("yp x+10", "Fechar Launcher")
 main_gui_close_btn.OnEvent("Click", _MainGuiCloseLauncher)
 
 _MainGuiShow(true)
@@ -375,6 +413,8 @@ _MainGuiOnResize(GuiObj, MinMax, Width, Height){
     local x := (Width*0.55)
     main_gui_upd_btn.Move(x)
     local x := (Width*0.05)
+    main_gui_upd_launcher_btn.Move(x)
+    local x := (Width*0.55)
     main_gui_close_btn.Move(x)
 }
 
@@ -415,6 +455,13 @@ _MainGuiUpdateAllApps(GuiCtrlObj, Info, Href?){
         a.UpdateApp()
     }
     _MainGuiReloadAppsList()
+}
+
+_MainGuiUpdateLauncher(GuiCtrlObj, Info, Href?){
+    local update := UpdateLauncher()
+    if not update
+        MsgBox("Nao ha atualizacoes para o Launcher.")
+    return
 }
 
 _MainGuiCloseLauncher(GuiCtrlObj, Info, Href?){

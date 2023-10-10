@@ -9,7 +9,7 @@
 #Include Bruno-Functions\Ini.ahk
 
 ;==========Globals==========;
-VERSION := "1.0.2"
+VERSION := "1.0.3"
 USER := "TheBrunoCA"
 REPO := "TBCA_Launcher"
 GITHUB := GithubReleases(USER, REPO, true)
@@ -17,6 +17,7 @@ INSTALL_DIR := A_AppData "\" USER "\" REPO
 EXE_PATH := INSTALL_DIR "\" REPO ".exe"
 VERSION_PATH := INSTALL_DIR "\version"
 CONFIG_INI := Ini(INSTALL_DIR "\CONFIG.ini")
+DEFAULT_ICON := INSTALL_DIR "\Default.ico"
 MAIN_GUI_TITLE := "TBCA_Launcher MainGui"
 
 BUSCAPMC_USER := "TheBrunoCA"
@@ -35,11 +36,13 @@ APPS.AddApp(BUSCAPMC_USER, BUSCAPMC_REPO)
 APPS.AddApp(COUPON_GENERATOR_USER, COUPON_GENERATOR_REPO)
 APPS.AddApp(FP_EXTRA_USER, FP_EXTRA_REPO)
 
+
 ;==========File Installs==========;
 ;==========Icons==========;
 FileInstall("C:\Repositorios\Icons\BuscaPMC.ico", APPS.GetApp(BUSCAPMC_REPO).icon, true)
 FileInstall("C:\Repositorios\Icons\Coupon-Generator.ico", APPS.GetApp(COUPON_GENERATOR_REPO).icon, true)
 FileInstall("C:\Repositorios\Icons\FP-Extra.ico", APPS.GetApp(FP_EXTRA_REPO).icon, true)
+FileInstall("C:\Repositorios\Icons\Default.ico", DEFAULT_ICON, true)
 
 ;==========Functions==========;
 
@@ -123,7 +126,10 @@ AppGui(app) {
 
     app_gui := Gui(, "TBCA_Launcher " app.repo)
     app_gui.OnEvent("Size", _OnResize)
-    app_gui.AddPicture("h150 w-1", app.icon)
+    if FileExist(app.icon)
+        app_gui.AddPicture("h150 w-1", app.icon)
+    else 
+        app_gui.AddPicture("h150 w-1", DEFAULT_ICON)
     progress_value := 0
     progress_bar := app_gui.AddProgress()
     progress_text := ""

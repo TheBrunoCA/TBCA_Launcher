@@ -87,7 +87,7 @@ EnableHotkeys(){
     Hotkey(CONFIG_INI[BUSCAPMC_REPO, "open_hotkey", "^+a"], HotkeyOpenBuscaPMC, "On")
     Hotkey(CONFIG_INI[COUPON_GENERATOR_REPO, "open_hotkey", "^+c"], HotkeyOpenCouponGenerator, "On")
     Hotkey(CONFIG_INI[FP_EXTRA_REPO, "open_hotkey", "^+f"], HotkeyOpenFPExtra, "On")
-    Hotkey(CONFIG_INI["Launcher", "open_hotkey", "^+m"], HotkeyOpenLauncher, "Off")
+    Hotkey(CONFIG_INI["Launcher", "open_hotkey", "^+m"], HotkeyOpenLauncher, "On")
 }
 
 HotkeyOpenBuscaPMC(args*){
@@ -374,10 +374,10 @@ EnableHotkeys()
 
 ;==========MainGui==========;
 main_gui := GreatGui("Resize", MAIN_GUI_TITLE)
-main_gui.OnEvent("Close", _OnClose)
-_OnClose(GuiObj){
+main_gui.OnEvent("Close", _MainGui_Close)
+_MainGui_Close(args*){
     _MainGuiShow(false)
-    return
+    return true
 }
 main_gui.OnEvent("Size", _MainGuiOnResize)
 
@@ -405,7 +405,7 @@ main_gui_upd_launcher_btn.OnEvent("Click", _MainGuiUpdateLauncher)
 main_gui_close_btn := main_gui.AddButton("yp x+10", "Fechar Launcher")
 main_gui_close_btn.OnEvent("Click", _MainGuiCloseLauncher)
 
-_MainGuiShow(true)
+;_MainGuiShow(true)
 
 _MainGuiOnResize(GuiObj, MinMax, Width, Height){
     if MinMax == -1
